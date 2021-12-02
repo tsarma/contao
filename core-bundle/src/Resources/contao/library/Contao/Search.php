@@ -124,18 +124,6 @@ class Search
 			}
 		}
 
-		// HOOK: add custom logic
-		if (isset($GLOBALS['TL_HOOKS']['indexPage']) && \is_array($GLOBALS['TL_HOOKS']['indexPage']))
-		{
-			foreach ($GLOBALS['TL_HOOKS']['indexPage'] as $callback)
-			{
-				System::importStatic($callback[0])->{$callback[1]}($strContent, $arrData, $arrSet);
-			}
-		}
-
-		// Free the memory
-		unset($arrData['content']);
-
 		$arrMatches = array();
 		preg_match('/<\/head>/', $strContent, $arrMatches, PREG_OFFSET_CAPTURE);
 		$intOffset = \strlen($arrMatches[0][0]) + $arrMatches[0][1];
@@ -176,6 +164,18 @@ class Search
 
 		// Calculate the checksum
 		$arrSet['checksum'] = md5($arrSet['text']);
+		
+		// HOOK: add custom logic
+		if (isset($GLOBALS['TL_HOOKS']['indexPage']) && \is_array($GLOBALS['TL_HOOKS']['indexPage']))
+		{
+			foreach ($GLOBALS['TL_HOOKS']['indexPage'] as $callback)
+			{
+				System::importStatic($callback[0])->{$callback[1]}($strContent, $arrData, $arrSet);
+			}
+		}
+
+		// Free the memory
+		unset($arrData['content']);		
 
 		$objIndex = $objDatabase->prepare("SELECT id, url FROM tl_search WHERE checksum=? AND pid=?")
 								->limit(1)
